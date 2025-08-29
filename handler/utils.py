@@ -1,7 +1,7 @@
-from handler.citilink_db import XMLDataBase
-from handler.citilink_handler import XMLHandler
-from handler.citilink_image import XMLImage
-from handler.citilink_save import XMLSaver
+from handler.auchan_db import XMLDataBase
+from handler.auchan_handler import XMLHandler
+from handler.auchan_image import XMLImage
+from handler.auchan_save import XMLSaver
 
 
 def initialize_components() -> tuple:

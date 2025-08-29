@@ -223,7 +223,7 @@ class XMLHandler(FileMixin):
                             'category_name': '',
                             'offers_count': 0
                         }
-                    category_data[category_id]['prices'].append(int(price))
+                    category_data[category_id]['prices'].append(float(price))
                     category_data[category_id]['offers_count'] += 1
 
             def aggregate_data(category_id):
