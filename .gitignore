@@ -1,0 +1,17 @@
+*.bak
+*.bac
+*.dat
+*.log
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.json
+*.csv#
+*.csv
+*.xml
+*.tmp
+env/
+__pycache__/
+.env
+MANIFEST.in

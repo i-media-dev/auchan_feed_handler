@@ -1,0 +1,11 @@
+services:
+  auchan_feed_handler:
+    environment:
+      - TZ=Europe/Moscow
+    image: imediadev/auchan_feed_handler
+    user: "1002:1002"
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - ./${FEEDS_FOLDER}:/app/${FEEDS_FOLDER}
+      - ./${PARSE_FEEDS_FOLDER}:/app/${PARSE_FEEDS_FOLDER}
