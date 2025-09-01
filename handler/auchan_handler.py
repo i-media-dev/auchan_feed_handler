@@ -64,7 +64,7 @@ class XMLHandler(FileMixin):
 
     def _super_feed(self):
         """Защищенный метод, создает шаблон фида с пустыми offers."""
-        file_names: list[str] = self._get_filenames_list(self.feeds_list)
+        file_names: list[str] = self._get_filenames_list(self.feeds_folder)
         first_file_tree = self._get_tree(file_names[0], self.feeds_folder)
         root = first_file_tree.getroot()
         offers = root.find('.//offers')
@@ -99,7 +99,7 @@ class XMLHandler(FileMixin):
         Метод, объединяющий все офферы в один фид
         по принципу inner join.
         """
-        file_names: list[str] = self._get_filenames_list(self.feeds_list)
+        file_names: list[str] = self._get_filenames_list(self.feeds_folder)
         offer_counts, all_offers = self._collect_all_offers(file_names)
         root, offers = self._super_feed()
         for offer_id, count in offer_counts.items():
@@ -119,7 +119,7 @@ class XMLHandler(FileMixin):
         Метод, объединяющий все офферы в один фид
         по принципу full outer join.
         """
-        file_names: list[str] = self._get_filenames_list(self.feeds_list)
+        file_names: list[str] = self._get_filenames_list(self.feeds_folder)
         _, all_offers = self._collect_all_offers(file_names)
         root, offers = self._super_feed()
         for offer in all_offers.values():
@@ -143,7 +143,7 @@ class XMLHandler(FileMixin):
         Метод, подставляющий в фиды данные
         из настраиваемого словаря CUSTOM_LABEL.
         """
-        for file_name in self._get_filenames_list(self.feeds_list):
+        for file_name in self._get_filenames_list(self.feeds_folder):
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
             for offer in root.findall('.//offer'):
@@ -196,7 +196,7 @@ class XMLHandler(FileMixin):
         """Метод, формирующий отчет по офферам."""
         result = []
         date_str = (dt.now()).strftime('%Y-%m-%d')
-        for file_name in self._get_filenames_list(self.feeds_list):
+        for file_name in self._get_filenames_list(self.feeds_folder):
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
             category_data = {}

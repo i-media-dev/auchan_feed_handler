@@ -62,7 +62,7 @@ class XMLImage(FileMixin):
     @time_of_function
     def get_images(self):
         """Метод получения и сохранения изображений из xml-файла."""
-        for file_name in self._get_filenames_list(self.feeds_list):
+        for file_name in self._get_filenames_list(self.feeds_folder):
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
             for offer in root.findall('.//offer'):
