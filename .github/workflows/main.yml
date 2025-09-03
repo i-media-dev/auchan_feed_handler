@@ -75,11 +75,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     steps:
-    - name: Send message
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          DEPLOY auchan_feed_handler
-          ✅ Деплой auchan_feed_handler успешно выполнен!
+      - name: Notify bot about deploy
+        run: |
+          curl -X POST https://tgbot.i-media.ru/trigger_deploy \
+            -H "Content-Type: application/json" \
+            -d '{"project": "auchan_feed_handler"}'
