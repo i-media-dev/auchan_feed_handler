@@ -81,4 +81,4 @@ jobs:
         run: |
           curl -X POST https://tgbot.i-media.ru/trigger_deploy \
             -H "Content-Type: application/json" \
-            -d '{"project": "auchan_feed_handler", "telegram_to": "$TELEGRAM_GROUP_ID"}'
+            -d "{\"project\": \"auchan_feed_handler\", \"telegram_to\": \"$TELEGRAM_GROUP_ID\"}"
