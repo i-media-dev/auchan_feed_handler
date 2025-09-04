@@ -76,7 +76,9 @@ jobs:
     needs: deploy
     steps:
       - name: Notify bot about deploy
+        env:
+          TELEGRAM_GROUP_ID: ${{ secrets.TELEGRAM_TO }}
         run: |
           curl -X POST https://tgbot.i-media.ru/trigger_deploy \
             -H "Content-Type: application/json" \
-            -d '{"project": "auchan_feed_handler"}'
+            -d '{"project": "auchan_feed_handler", "telegram_to": "$TELEGRAM_GROUP_ID"}'
