@@ -25,6 +25,7 @@ def time_of_script(func):
     def wrapper():
         date_str = dt.now().strftime('%Y-%m-%d')
         time_str = dt.now().strftime('%H:%M:%S')
+        run_id = str(int(time.time()))
         print(f'Функция main начала работу {date_str} в {time_str}')
         start_time = time.time()
         try:
@@ -40,6 +41,8 @@ def time_of_script(func):
             logging.info(f'DATE={date_str}')
             logging.info(f'EXECUTION_TIME={execution_time} сек')
             logging.info(f'FUNCTION_NAME={func.__name__}')
+            logging.info(f'RUN_ID={run_id}')
+            logging.info('ENDLOGGING=1')
             return result
         except Exception as e:
             execution_time = round(time.time() - start_time, 3)
@@ -55,6 +58,8 @@ def time_of_script(func):
             logging.info(f'ERROR_TYPE={type(e).__name__}')
             logging.info(f'ERROR_MESSAGE={str(e)}')
             logging.info(f'FUNCTION_NAME={func.__name__}')
+            logging.info(f'RUN_ID={run_id}')
+            logging.info('ENDLOGGING=1')
             raise
     return wrapper
 
