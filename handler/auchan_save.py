@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from dotenv import load_dotenv
 
@@ -91,7 +92,7 @@ class XMLSaver(FileMixin):
 
     def _validate_xml(self, xml_content: bytes):
         """
-        Валидирует XML: проверяет что не пустой и well-formed.
+        Валидирует XML.
         Возвращает декодированное содержимое и кодировку.
         """
         if not xml_content.strip():
@@ -100,7 +101,6 @@ class XMLSaver(FileMixin):
         try:
             declaration = xml_content[:100].decode('ascii', errors='ignore')
             if 'encoding=' in declaration:
-                import re
                 match = re.search(r'encoding=[\'"]([^\'"]+)[\'"]', declaration)
                 if match:
                     encoding = match.group(1).lower()
