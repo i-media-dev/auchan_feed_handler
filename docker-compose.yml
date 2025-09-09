@@ -9,3 +9,7 @@ services:
       - ./logs:/app/logs
       - ./${FEEDS_FOLDER}:/app/${FEEDS_FOLDER}
       - ./${PARSE_FEEDS_FOLDER}:/app/${PARSE_FEEDS_FOLDER}
+      - /home/main_ftp_user/projects/auchan/${PARSE_FEEDS_FOLDER}:/app/${PARSE_FEEDS_FOLDER}
+      - ./${IMAGE_FOLDER}:/app/${IMAGE_FOLDER}
+      - ./${NEW_IMAGE_FOLDER}:/app/${NEW_IMAGE_FOLDER}
+      - /home/main_ftp_user/projects/auchan/${NEW_IMAGE_FOLDER}:/app/${NEW_IMAGE_FOLDER}
