@@ -29,5 +29,6 @@ config = {
     'database': os.getenv('DB_NAME_AUCHAN'),
     'port': os.getenv('DB_PORT_AUCHAN', 3306),
     'connection_timeout': 10,
+    'read_timeout': 60,
     'use_pure': True
 }

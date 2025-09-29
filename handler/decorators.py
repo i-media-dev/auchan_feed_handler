@@ -110,20 +110,25 @@ def connection_db(func):
         подключения к базе данных и логирования.
     """
     def wrapper(*args, **kwargs):
-        connection = mysql.connector.connect(**config)
-        cursor = connection.cursor()
+        connection = None
+        cursor = None
         try:
+            connection = mysql.connector.connect(**config)
+            cursor = connection.cursor()
             kwargs['cursor'] = cursor
             result = func(*args, **kwargs)
             connection.commit()
             return result
         except Exception as e:
-            connection.rollback()
+            if connection:
+                connection.rollback()
             logging.error(f'Ошибка в {func.__name__}: {str(e)}', exc_info=True)
             raise
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection and connection.is_connected():
+                connection.close()
     return wrapper
 
 
