@@ -1,13 +1,11 @@
-import pytest
-import requests
 from unittest.mock import Mock, patch
 
-from handler.auchan_save import XMLSaver
-from handler.exceptions import (
-    EmptyFeedsListError,
-    EmptyXMLError,
-    InvalidXMLError
-)
+import pytest
+import requests
+
+from handler.exceptions import (EmptyFeedsListError, EmptyXMLError,
+                                InvalidXMLError)
+from handler.feeds_save import XMLSaver
 
 
 def test_init_with_empty_feeds_list():
@@ -38,7 +36,7 @@ def test_get_filename_from_url(sample_feeds):
     assert filename == 'test_feed.xml'
 
 
-@patch('handler.auchan_save.requests.get')
+@patch('handler.feeds_save.requests.get')
 def test_get_file_success(mock_get, sample_feeds, mock_response):
     """Тест успешного получения файла."""
     mock_get.return_value = mock_response
@@ -51,7 +49,7 @@ def test_get_file_success(mock_get, sample_feeds, mock_response):
     )
 
 
-@patch('handler.auchan_save.requests.get')
+@patch('handler.feeds_save.requests.get')
 def test_get_file_unauthorized_then_success(mock_get, sample_feeds):
     """Тест получения файла с авторизацией."""
     mock_response_401 = Mock()
@@ -96,8 +94,8 @@ def test_validate_xml_invalid_content(sample_feeds):
         saver._validate_xml(b'<invalid><xml>')
 
 
-@patch('handler.auchan_save.requests.get')
-@patch('handler.auchan_save.XMLSaver._validate_xml')
+@patch('handler.feeds_save.requests.get')
+@patch('handler.feeds_save.XMLSaver._validate_xml')
 def test_save_xml_success(
     mock_validate,
     mock_get,
@@ -120,7 +118,7 @@ def test_save_xml_success(
     assert any(file.name == 'feed2.xml' for file in files)
 
 
-@patch('handler.auchan_save.requests.get')
+@patch('handler.feeds_save.requests.get')
 def test_save_xml_failed_download(mock_get, sample_feeds, tmp_path):
     """Тест обработки ошибки загрузки файла."""
     mock_get.side_effect = requests.RequestException("Connection error")
@@ -131,8 +129,8 @@ def test_save_xml_failed_download(mock_get, sample_feeds, tmp_path):
     assert len(files) == 0
 
 
-@patch('handler.auchan_save.requests.get')
-@patch('handler.auchan_save.XMLSaver._validate_xml')
+@patch('handler.feeds_save.requests.get')
+@patch('handler.feeds_save.XMLSaver._validate_xml')
 def test_save_xml_invalid_xml(
     mock_validate,
     mock_get,
@@ -153,7 +151,7 @@ def test_save_xml_invalid_xml(
     assert len(files) == 0
 
 
-@patch('handler.auchan_save.requests.get')
+@patch('handler.feeds_save.requests.get')
 def test_save_xml_encoding_detection(mock_get, tmp_path):
     """Тест определения кодировки XML."""
     xml_content_win1251 = b'''<?xml version="1.0" encoding="windows-1251"?>

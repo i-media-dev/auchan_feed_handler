@@ -1,10 +1,10 @@
-import pytest
-import sys
 import os
+import sys
+from unittest.mock import MagicMock, Mock
 
-from unittest.mock import Mock, MagicMock, patch
+import pytest
 
-from handler.auchan_db import XMLDataBase
+from handler.reports_db import XMLDataBase
 
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))

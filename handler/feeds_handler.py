@@ -2,22 +2,19 @@ import json
 import logging
 import os
 import xml.etree.ElementTree as ET
-from datetime import datetime as dt
 from collections import defaultdict
+from datetime import datetime as dt
 
 import numpy as np
 
-from handler.constants import (
-    DECIMAL_ROUNDING,
-    FEEDS_FOLDER,
-    PARSE_FEEDS_FOLDER
-)
+from handler.calculation import clear_avg, clear_max, clear_median, clear_min
+from handler.constants import (DECIMAL_ROUNDING, FEEDS_FOLDER,
+                               PARSE_FEEDS_FOLDER)
 from handler.decorators import time_of_function, try_except
 from handler.exceptions import StructureXMLError
 from handler.feeds import FEEDS
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
-from handler.calculation import clear_avg, clear_max, clear_median, clear_min
 
 setup_logging()
 

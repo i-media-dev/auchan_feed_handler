@@ -1,12 +1,7 @@
 import logging
 
-from handler.constants import (
-    CREATE_CATALOG_TABLE,
-    CREATE_REPORTS_TABLE,
-    NAME_OF_SHOP,
-    INSERT_CATALOG,
-    INSERT_REPORT
-)
+from handler.constants import (CREATE_CATALOG_TABLE, CREATE_REPORTS_TABLE,
+                               INSERT_CATALOG, INSERT_REPORT, NAME_OF_SHOP)
 from handler.decorators import connection_db
 from handler.exceptions import TableNameError
 from handler.logging_config import setup_logging

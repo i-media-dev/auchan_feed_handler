@@ -1,21 +1,18 @@
 import logging
 import os
 import re
-
-from dotenv import load_dotenv
+import xml.etree.ElementTree as ET
 
 import requests
-import xml.etree.ElementTree as ET
+from dotenv import load_dotenv
+
 from handler.constants import FEEDS_FOLDER
-from handler.decorators import time_of_function, retry_on_network_error
-from handler.exceptions import (
-    EmptyFeedsListError,
-    EmptyXMLError,
-    InvalidXMLError
-)
+from handler.decorators import retry_on_network_error, time_of_function
+from handler.exceptions import (EmptyFeedsListError, EmptyXMLError,
+                                InvalidXMLError)
 from handler.feeds import FEEDS
-from handler.mixins import FileMixin
 from handler.logging_config import setup_logging
+from handler.mixins import FileMixin
 
 setup_logging()
 

@@ -1,7 +1,7 @@
-from handler.auchan_db import XMLDataBase
-from handler.auchan_handler import XMLHandler
-from handler.auchan_image import XMLImage
-from handler.auchan_save import XMLSaver
+from handler.reports_db import XMLDataBase
+from handler.feeds_handler import XMLHandler
+from handler.image_handler import XMLImage
+from handler.feeds_save import XMLSaver
 
 
 def initialize_components() -> tuple:

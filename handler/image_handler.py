@@ -1,15 +1,15 @@
-from io import BytesIO
 import logging
+from io import BytesIO
 from pathlib import Path
 
-from PIL import Image
 import requests
+from PIL import Image
 
 from handler.constants import FEEDS_FOLDER, IMAGE_FOLDER, NEW_IMAGE_FOLDER
 from handler.decorators import time_of_function
 from handler.feeds import FEEDS
-from handler.mixins import FileMixin
 from handler.logging_config import setup_logging
+from handler.mixins import FileMixin
 
 setup_logging()
 

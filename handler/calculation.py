@@ -1,10 +1,7 @@
 import numpy as np
 
-from handler.constants import (
-    DECIMAL_ROUNDING,
-    LOWER_OUTLIER_PERCENTILE,
-    UPPER_OUTLIER_PERCENTILE
-)
+from handler.constants import (DECIMAL_ROUNDING, LOWER_OUTLIER_PERCENTILE,
+                               UPPER_OUTLIER_PERCENTILE)
 
 
 def calc_quantile(data):
