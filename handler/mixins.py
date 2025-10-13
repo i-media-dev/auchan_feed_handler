@@ -18,22 +18,44 @@ class FileMixin:
     - _get_tree - Получает дерево XML-файла.
     """
 
-    def _get_filenames_list(self, folder_name: str) -> list[str]:
+    def _indent(self, elem, level=0) -> None:
+        """Защищенный метод, расставляет правильные отступы в XML файлах."""
+        i = '\n' + level * '  '
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + '  '
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for child in elem:
+                self._indent(child, level + 1)
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i
+
+    def _get_filenames_list(
+        self,
+        folder_name: str,
+        format: str = 'xml'
+    ) -> list[str]:
         """Защищенный метод, возвращает список названий фидов."""
         folder_path = Path(__file__).parent.parent / folder_name
         if not folder_path.exists():
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
-        feeds_name = [
-            feed.name for feed in folder_path.glob('*.xml') if feed.is_file()
+        files_names = [
+            file.name for file in folder_path.glob(
+                f'*.{format}'
+            ) if file.is_file()
         ]
-        if not feeds_name:
-            logging.error('В папке нет xml-файлов')
-            raise EmptyFeedsListError('Нет скачанных xml-файлов')
-        logging.debug(f'Найдены файлы: {feeds_name}')
-        return feeds_name
+        if not files_names:
+            logging.error('В папке нет файлов')
+            raise EmptyFeedsListError('Нет скачанных файлов')
+        logging.debug(f'Найдены файлы: {files_names}')
+        return files_names
 
-    def _make_dir(self, folder_name: Path) -> Path:
+    def _make_dir(self, folder_name: str) -> Path:
         """Защищенный метод, создает директорию."""
         try:
             file_path = Path(__file__).parent.parent / folder_name

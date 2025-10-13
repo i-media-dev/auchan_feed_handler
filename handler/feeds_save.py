@@ -26,7 +26,7 @@ class XMLSaver(FileMixin):
 
     def __init__(
         self,
-        feeds_list: list[str] = FEEDS,
+        feeds_list: tuple[str, ...] = FEEDS,
         feeds_folder: str = FEEDS_FOLDER
     ) -> None:
         if not feeds_list:
@@ -70,22 +70,6 @@ class XMLSaver(FileMixin):
     def _get_filename(self, feed: str) -> str:
         """Защищенный метод, формирующий имя xml-файлу."""
         return feed.split('/')[-1]
-
-    def _indent(self, elem, level=0) -> None:
-        """Защищенный метод, расставляет правильные отступы в XML файлах."""
-        i = '\n' + level * '  '
-        if len(elem):
-            if not elem.text or not elem.text.strip():
-                elem.text = i + '  '
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-            for child in elem:
-                self._indent(child, level + 1)
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-        else:
-            if level and (not elem.tail or not elem.tail.strip()):
-                elem.tail = i
 
     def _validate_xml(self, xml_content: bytes):
         """

@@ -8,8 +8,9 @@ from datetime import datetime as dt
 import numpy as np
 
 from handler.calculation import clear_avg, clear_max, clear_median, clear_min
-from handler.constants import (DECIMAL_ROUNDING, FEEDS_FOLDER,
-                               PARSE_FEEDS_FOLDER)
+from handler.constants import (ADDRESS, DATE_FORMAT, DECIMAL_ROUNDING,
+                               DOMEN_FTP, FEEDS_FOLDER, NEW_FEEDS_FOLDER,
+                               NEW_IMAGE_FOLDER, PROTOCOL)
 from handler.decorators import time_of_function, try_except
 from handler.exceptions import StructureXMLError
 from handler.feeds import FEEDS
@@ -28,35 +29,26 @@ class XMLHandler(FileMixin):
     def __init__(
         self,
         feeds_folder: str = FEEDS_FOLDER,
-        new_feeds_folder: str = PARSE_FEEDS_FOLDER,
-        feeds_list: list[str] = FEEDS
+        new_feeds_folder: str = NEW_FEEDS_FOLDER,
+        new_image_folder: str = NEW_IMAGE_FOLDER,
+        feeds_list: tuple[str, ...] = FEEDS
     ) -> None:
         self.feeds_folder = feeds_folder
         self.new_feeds_folder = new_feeds_folder
         self.feeds_list = feeds_list
+        self.new_image_folder = new_image_folder
 
-    def _indent(self, elem, level=0) -> None:
-        """Защищенный метод, расставляет правильные отступы в XML файлах."""
-        i = '\n' + level * '  '
-        if len(elem):
-            if not elem.text or not elem.text.strip():
-                elem.text = i + '  '
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-            for child in elem:
-                self._indent(child, level + 1)
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-        else:
-            if level and (not elem.tail or not elem.tail.strip()):
-                elem.tail = i
-
-    def _format_xml(self, elem, file_path) -> None:
+    def _save_xml(self, elem, file_folder, filename) -> None:
         """Защищенный метод, сохраняет отформатированные файлы."""
         root = elem
         self._indent(root)
         formatted_xml = ET.tostring(root, encoding='unicode')
-        with open(file_path, 'w', encoding='utf-8') as f:
+        file_path = self._make_dir(file_folder)
+        with open(
+            file_path / filename,
+            'w',
+            encoding='utf-8'
+        ) as f:
             f.write(formatted_xml)
 
     def _super_feed(self):
@@ -102,11 +94,7 @@ class XMLHandler(FileMixin):
         for offer_id, count in offer_counts.items():
             if count == len(file_names):
                 offers.append(all_offers[offer_id])
-        output_path = self._make_dir(
-            self.new_feeds_folder
-        ) / 'inner_join_feed.xml'
-        self._format_xml(root, output_path)
-        logging.debug(f'Файл создан по адресу: {output_path}')
+        self._save_xml(root, self.new_feeds_folder, 'inner_join_feed.xml')
         return True
 
     @time_of_function
@@ -121,11 +109,7 @@ class XMLHandler(FileMixin):
         root, offers = self._super_feed()
         for offer in all_offers.values():
             offers.append(offer)
-        output_path = self._make_dir(
-            self.new_feeds_folder
-        ) / 'full_outer_join_feed.xml'
-        self._format_xml(root, output_path)
-        logging.debug(f'Файл создан по адресу: {output_path}')
+        self._save_xml(root, self.new_feeds_folder, 'full_outer_join_feed.xml')
         return True
 
     @time_of_function
@@ -181,10 +165,7 @@ class XMLHandler(FileMixin):
                         ET.SubElement(
                             offer, f'custom_label_{next_num}'
                         ).text = label_name
-            output_path = self._make_dir(
-                self.new_feeds_folder) / f'new_{file_name}'
-            self._format_xml(root, output_path)
-            logging.debug(f'Файл записан по адресу: {output_path}')
+            self._save_xml(root, self.new_feeds_folder, f'new_{file_name}')
         return True
 
     @time_of_function
@@ -192,7 +173,7 @@ class XMLHandler(FileMixin):
     def get_offers_report(self) -> list[dict]:
         """Метод, формирующий отчет по офферам."""
         result = []
-        date_str = (dt.now()).strftime('%Y-%m-%d')
+        date_str = (dt.now()).strftime(DATE_FORMAT)
         for file_name in self._get_filenames_list(self.feeds_folder):
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
@@ -283,9 +264,111 @@ class XMLHandler(FileMixin):
     ) -> None:
         """Отладочный метод сохраняет данные в файл формата json."""
         os.makedirs(folder, exist_ok=True)
-        date_str = (dt.now()).strftime('%Y-%m-%d')
+        date_str = (dt.now()).strftime(DATE_FORMAT)
         filename = os.path.join(folder, f'{prefix}_{date_str}.json')
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         logging.info(f'✅ Данные сохранены в {filename}')
         logging.debug('Файл сохранен.')
+
+    def _delete_picture(self):
+        try:
+            image_dict = {}
+            for img_file in self._get_filenames_list(
+                self.new_image_folder,
+                'png'
+            ):
+                try:
+                    offer_id = img_file.split('_')[0]
+                    if offer_id not in image_dict:
+                        image_dict[offer_id] = []
+                    image_dict[offer_id].append(img_file)
+                except (ValueError, IndexError):
+                    continue
+
+            for file_name in self._get_filenames_list(self.feeds_folder):
+                tree = self._get_tree(file_name, self.feeds_folder)
+                root = tree.getroot()
+
+                for offer in list(root.findall('.//offer')):
+                    offer_id = offer.get('id')
+                    if not offer_id:
+                        continue
+
+                    images = list(offer.findall('picture'))
+                    for image in images:
+                        offer.remove(image)
+                    logging.info(
+                        f'В оффере с id {offer_id} '
+                        f'удалено {len(images)} изображений'
+                    )
+        except Exception as e:
+            logging.error(f'Ошибка в _delete_picture: {e}')
+            raise
+
+    def _get_image_dict(self):
+        image_dict = {}
+        for img_file in self._get_filenames_list(
+            self.new_image_folder,
+            'png'
+        ):
+            try:
+                offer_id = img_file.split('.')[0]
+                if offer_id not in image_dict:
+                    image_dict[offer_id] = []
+                image_dict[offer_id].append(img_file)
+            except (ValueError, IndexError):
+                logging.warning(
+                    'Не удалось присвоить изображение '
+                    f'{img_file} ключу {offer_id}'
+                )
+                continue
+            except Exception as e:
+                logging.error(
+                    'Неожиданная ошибка во время '
+                    f'сборки словаря image_dict: {e}'
+                )
+                raise
+        return image_dict
+
+    @time_of_function
+    def image_replacement(self):
+        """Метод, подставляющий в фиды новые изображения."""
+        deleted_images = 0
+        input_images = 0
+        try:
+            image_dict = self._get_image_dict()
+
+            for file_name in self._get_filenames_list(self.feeds_folder):
+                tree = self._get_tree(file_name, self.feeds_folder)
+                root = tree.getroot()
+
+                offers = list(root.findall('.//offer'))
+                for offer in offers:
+                    offer_id = offer.get('id')
+                    if not offer_id:
+                        continue
+
+                    pictures = offer.findall('picture')
+                    for picture in pictures:
+                        offer.remove(picture)
+                    deleted_images += len(pictures)
+
+                    if offer_id in image_dict:
+                        for img_file in image_dict[offer_id]:
+                            picture_tag = ET.SubElement(offer, 'picture')
+                            picture_tag.text = (
+                                f'{PROTOCOL}://{DOMEN_FTP}/'
+                                f'{ADDRESS}/{img_file}'
+                            )
+                            input_images += 1
+                self._save_xml(root, self.new_feeds_folder, file_name)
+            logging.info(
+                '\n Количество удаленных изображений в '
+                f'оффере - {deleted_images}\n'
+                f'Количество добавленных изображений - {input_images}'
+            )
+
+        except Exception as e:
+            logging.error(f'Ошибка в image_replacement: {e}')
+            raise

@@ -15,3 +15,4 @@ env/
 __pycache__/
 .env
 MANIFEST.in
+!frame/

@@ -1,5 +1,5 @@
 """Список ссылок на фиды."""
-FEEDS = [
+FEEDS = (
     'https://www.auchan.ru/feeds/poisk-mo.xml',
     'https://www.auchan.ru/feeds/moscow.xml',
     'https://www.auchan.ru/feeds/001_mitischi.xml',
@@ -22,5 +22,5 @@ FEEDS = [
     'https://www.auchan.ru/feeds/061_yaroslavl.xml',
     'https://www.auchan.ru/feeds/745_vologda_rio.xml',
     'https://www.auchan.ru/feeds/312_kaluga.xml'
-]
+)
 """Список ссылок на фиды для скачивания."""

@@ -4,6 +4,44 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PROTOCOL = 'https'
+"""Протокол запроса."""
+
+ADDRESS = 'projects/auchan/new_images'
+"""Путь к файлу."""
+
+DOMEN_FTP = 'feeds.i-media.ru'
+"""Домен FTP-сервера."""
+
+DEFAULT_IMAGE_SIZE = (1000, 1000)
+"""
+Оптимальный размер рамки и финального
+изображения по умолчанию.
+"""
+
+VERTICAL_OFFSET = 0
+"""
+Сдвиг вниз по вертикали (опциональный параметр).
+Если указать 0, изображение будет ровно по центру.
+"""
+
+RGB_COLOR_SETTINGS = (255, 255, 255)
+"""Цвет RGB холста."""
+
+RGBA_COLOR_SETTINGS = (0, 0, 0, 0)
+"""Цвет RGBA холста."""
+
+NUMBER_PIXELS_IMAGE = 250
+"""
+Количество пикселей для подгонки изображения.
+Чем меньше число, тем больше размер картинки.
+(в этом скрипте не используется)
+"""
+
+NAME_OF_FRAME = 'auchan.png'
+
+NAME_OF_FRAME_PROMO = 'auchan_promo.png'
+
 DATE_FORMAT = '%Y-%m-%d'
 """Формат даты по умолчанию."""
 
@@ -19,9 +57,12 @@ MAX_RETRIES = 5
 NAME_OF_SHOP = 'auchan'
 """Константа названия магазина."""
 
+FRAME_FOLDER = os.getenv('FRAME_FOLDER', 'frame')
+"""Константа стокового названия директории c рамкой"""
+
 FEEDS_FOLDER = os.getenv('FEEDS_FOLDER', 'temp_feeds')
 """Константа стокового названия директорий."""
-PARSE_FEEDS_FOLDER = os.getenv('PARSE_FEEDS_FOLDER', 'new_feeds')
+NEW_FEEDS_FOLDER = os.getenv('NEW_FEEDS_FOLDER', 'new_feeds')
 """Константа стокового названия директорий."""
 
 IMAGE_FOLDER = os.getenv('IMAGE_FOLDER', 'old_images')
