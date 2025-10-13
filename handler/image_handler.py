@@ -6,8 +6,7 @@ import requests
 from PIL import Image
 
 from handler.constants import (DEFAULT_IMAGE_SIZE, FEEDS_FOLDER, FRAME_FOLDER,
-                               IMAGE_FOLDER, NAME_OF_FRAME,
-                               NAME_OF_FRAME_PROMO, NEW_IMAGE_FOLDER,
+                               IMAGE_FOLDER, NAME_OF_FRAME, NEW_IMAGE_FOLDER,
                                NUMBER_PIXELS_IMAGE, RGB_COLOR_SETTINGS,
                                VERTICAL_OFFSET)
 from handler.decorators import time_of_function
