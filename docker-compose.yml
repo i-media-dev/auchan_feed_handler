@@ -3,7 +3,6 @@ services:
     environment:
       - TZ=Europe/Moscow
     image: imediadev/auchan_feed_handler
-    user: "1002:1002"
     env_file: .env
     volumes:
       - ./logs:/app/logs
