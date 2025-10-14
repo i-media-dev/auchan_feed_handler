@@ -271,47 +271,9 @@ class XMLHandler(FileMixin):
         logging.info(f'✅ Данные сохранены в {filename}')
         logging.debug('Файл сохранен.')
 
-    def _delete_picture(self):
-        try:
-            image_dict = {}
-            for img_file in self._get_filenames_list(
-                self.new_image_folder,
-                'png'
-            ):
-                try:
-                    offer_id = img_file.split('_')[0]
-                    if offer_id not in image_dict:
-                        image_dict[offer_id] = []
-                    image_dict[offer_id].append(img_file)
-                except (ValueError, IndexError):
-                    continue
-
-            for file_name in self._get_filenames_list(self.feeds_folder):
-                tree = self._get_tree(file_name, self.feeds_folder)
-                root = tree.getroot()
-
-                for offer in list(root.findall('.//offer')):
-                    offer_id = offer.get('id')
-                    if not offer_id:
-                        continue
-
-                    images = list(offer.findall('picture'))
-                    for image in images:
-                        offer.remove(image)
-                    logging.info(
-                        f'В оффере с id {offer_id} '
-                        f'удалено {len(images)} изображений'
-                    )
-        except Exception as e:
-            logging.error(f'Ошибка в _delete_picture: {e}')
-            raise
-
     def _get_image_dict(self):
         image_dict = {}
-        for img_file in self._get_filenames_list(
-            self.new_image_folder,
-            'png'
-        ):
+        for img_file in self._get_filenames_list(self.new_image_folder):
             try:
                 offer_id = img_file.split('.')[0]
                 if offer_id not in image_dict:
@@ -336,6 +298,7 @@ class XMLHandler(FileMixin):
         """Метод, подставляющий в фиды новые изображения."""
         deleted_images = 0
         input_images = 0
+        input_images_promo = 0
         try:
             image_dict = self._get_image_dict()
 
@@ -346,6 +309,8 @@ class XMLHandler(FileMixin):
                 offers = list(root.findall('.//offer'))
                 for offer in offers:
                     offer_id = offer.get('id')
+                    oldprice_tag = offer.find('oldprice')
+
                     if not offer_id:
                         continue
 
@@ -354,19 +319,33 @@ class XMLHandler(FileMixin):
                         offer.remove(picture)
                     deleted_images += len(pictures)
 
-                    if offer_id in image_dict:
-                        for img_file in image_dict[offer_id]:
-                            picture_tag = ET.SubElement(offer, 'picture')
-                            picture_tag.text = (
-                                f'{PROTOCOL}://{DOMEN_FTP}/'
-                                f'{ADDRESS}/{img_file}'
-                            )
-                            input_images += 1
+                    if oldprice_tag:
+                        if offer_id in image_dict:
+                            for img_file in image_dict[offer_id]:
+                                picture_tag = ET.SubElement(offer, 'picture')
+                                picture_tag.text = (
+                                    f'{PROTOCOL}://{DOMEN_FTP}/'
+                                    f'{ADDRESS}/{img_file}'
+                                )
+                                input_images += 1
+                    else:
+                        image_key = f'{offer_id}_promo'
+                        if image_key in image_dict:
+                            for img_file in image_dict[image_key]:
+                                picture_tag = ET.SubElement(offer, 'picture')
+                                picture_tag.text = (
+                                    f'{PROTOCOL}://{DOMEN_FTP}/'
+                                    f'{ADDRESS}/{img_file}'
+                                )
+                                input_images_promo += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logging.info(
-                '\n Количество удаленных изображений в '
+                '\nКоличество удаленных изображений в '
                 f'оффере - {deleted_images}\n'
-                f'Количество добавленных изображений - {input_images}'
+                'Количество добавленных изображений '
+                f'без промо - {input_images}\n'
+                'Количество добавленных изображений '
+                f'с промо - {input_images_promo}'
             )
 
         except Exception as e:

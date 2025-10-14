@@ -8,7 +8,7 @@ from PIL import Image
 from handler.constants import (DEFAULT_IMAGE_SIZE, FEEDS_FOLDER, FRAME_FOLDER,
                                IMAGE_FOLDER, NAME_OF_FRAME, NEW_IMAGE_FOLDER,
                                NUMBER_PIXELS_IMAGE, RGB_COLOR_SETTINGS,
-                               VERTICAL_OFFSET)
+                               VERTICAL_OFFSET, NAME_OF_FRAME_PROMO)
 from handler.decorators import time_of_function
 from handler.exceptions import DirectoryCreationError, EmptyFeedsListError
 from handler.feeds import FEEDS
@@ -68,10 +68,10 @@ class XMLImage(FileMixin):
             return ''
         return f'{offer_id}.{image_format}'
 
-    def _build_offers_set(self, folder: str, format_str: str, target_set: set):
+    def _build_offers_set(self, folder: str, target_set: set):
         """Защищенный метод, строит множество всех существующих офферов."""
         try:
-            for file_name in self._get_filenames_list(folder, format_str):
+            for file_name in self._get_filenames_list(folder):
                 offer_image = file_name.split('.')[0]
                 if offer_image:
                     target_set.add(offer_image)
@@ -112,12 +112,10 @@ class XMLImage(FileMixin):
         offers_with_images = 0
         images_downloaded = 0
         offers_skipped_existing = 0
-        images_skipped_no_photo = 0
 
         try:
             self._build_offers_set(
                 self.image_folder,
-                'jpeg',
                 self._existing_image_offers
             )
         except (DirectoryCreationError, EmptyFeedsListError):
@@ -139,10 +137,6 @@ class XMLImage(FileMixin):
 
                     offer_image = picture.text
                     if not offer_image:
-                        continue
-
-                    if 'no_photo' in offer_image:
-                        images_skipped_no_photo += 1
                         continue
 
                     offers_with_images += 1
@@ -172,7 +166,6 @@ class XMLImage(FileMixin):
                 'Всего офферов с подходящими '
                 f'изображениями - {offers_with_images}\n'
                 f'Всего изображений скачано {images_downloaded}\n'
-                f'Пропущено изображений no_photo - {images_skipped_no_photo}\n'
                 'Пропущено офферов с уже скачанными '
                 f'изображениями - {offers_skipped_existing}'
             )
@@ -180,30 +173,29 @@ class XMLImage(FileMixin):
             logging.error(f'Неожиданная ошибка при получении изображений: {e}')
 
     @time_of_function
-    def add_frame(self):
+    def _add_frame(
+        self,
+        name_of_frame: str,
+        images_names_list: list,
+        file_path: Path,
+        frame_path: Path,
+        new_file_path: Path
+    ):
         """Метод форматирует изображения и добавляет рамку."""
-        images_names_list = self._get_filenames_list(self.image_folder, 'jpeg')
-        file_path = self._make_dir(self.image_folder)
-        frame_path = self._make_dir(self.frame_folder)
-        new_file_path = self._make_dir(self.new_image_folder)
         total_framed_images = 0
         total_failed_images = 0
         skipped_images = 0
 
         try:
-            self._build_offers_set(
-                self.new_image_folder,
-                'png',
-                self._existing_framed_offers
-            )
-        except (DirectoryCreationError, EmptyFeedsListError):
-            logging.warning(
-                'Директория с форматированными изображениями отсутствует. '
-                'Первый запуск'
-            )
-        try:
             for image_name in images_names_list:
-                if image_name.split('.')[0] in self._existing_framed_offers:
+                base_name = image_name.split('.')[0]
+
+                if 'promo' in name_of_frame:
+                    result_name = f'{base_name}_promo'
+                else:
+                    result_name = base_name
+
+                if result_name in self._existing_framed_offers:
                     skipped_images += 1
                     continue
 
@@ -211,7 +203,7 @@ class XMLImage(FileMixin):
                     image.load()
                     image_width, image_height = image.size
 
-                with Image.open(frame_path / NAME_OF_FRAME) as frame:
+                with Image.open(frame_path / name_of_frame) as frame:
                     frame_resized = frame.resize(DEFAULT_IMAGE_SIZE)
 
                 final_image = Image.new(
@@ -241,19 +233,49 @@ class XMLImage(FileMixin):
 
                 final_image.paste(image, (x_position, y_position))
                 final_image.paste(frame_resized, (0, 0), frame_resized)
-                final_image.save(
-                    new_file_path / f'{image_name.split('.')[0]}.png',
-                    'PNG'
-                )
+                filename = f'{result_name}.png'
+                final_image.save(new_file_path / filename, 'PNG')
                 total_framed_images += 1
+
             logging.info(
                 '\nКоличество изображений, к которым добавлена '
-                f'рамка - {total_framed_images}\n'
+                f'рамка {name_of_frame} - {total_framed_images}\n'
                 f'Количество уже обрамленных изображений - {skipped_images}\n'
                 'Количество изображений обрамленных '
                 f'неудачно - {total_failed_images}'
-
             )
         except Exception as e:
             total_failed_images += 1
             logging.error(f'Неожиданная ошибка наложения рамки: {e}')
+
+    def add_all_frame(self):
+        """
+        Метод форматирует изображения и добавляет
+        все рамки ко всем изображениям.
+        """
+        try:
+            file_path = self._make_dir(self.image_folder)
+            frame_path = self._make_dir(self.frame_folder)
+            new_file_path = self._make_dir(self.new_image_folder)
+            images_names_list = self._get_filenames_list(self.image_folder)
+            try:
+                self._build_offers_set(
+                    self.new_image_folder,
+                    self._existing_framed_offers
+                )
+            except (DirectoryCreationError, EmptyFeedsListError):
+                logging.warning(
+                    'Директория с форматированными изображениями отсутствует. '
+                    'Первый запуск'
+                )
+
+            for frame_name in (NAME_OF_FRAME, NAME_OF_FRAME_PROMO):
+                self._add_frame(
+                    frame_name,
+                    images_names_list,
+                    file_path,
+                    frame_path,
+                    new_file_path
+                )
+        except Exception as e:
+            logging.error(f'Неожиданная ошибка: {e}')

@@ -11,10 +11,10 @@ def main():
     data = handler_client.get_offers_report()
     save_to_database(db_client, data)
     # handler_client.process_feeds(CUSTOM_LABEL, UNAVAILABLE_OFFER_ID_LIST)
-    # handler_client.full_outer_join_feeds()
-    # handler_client.inner_join_feeds()
+    handler_client.full_outer_join_feeds()
+    handler_client.inner_join_feeds()
     image_client.get_images()
-    image_client.add_frame()
+    image_client.add_all_frame()
     handler_client.image_replacement()
 
 
