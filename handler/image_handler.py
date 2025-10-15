@@ -169,7 +169,7 @@ class XMLImage(FileMixin):
                     )
                     images_downloaded += 1
             logging.info(
-                f'\n Всего обработано фидов - {len(file_name_list)}\n'
+                f'\n Всего обработано фидов - {len(filenames_list)}\n'
                 f'Всего обработано офферов - {total_offers_processed}\n'
                 'Всего офферов с подходящими '
                 f'изображениями - {offers_with_images}\n'
