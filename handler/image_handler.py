@@ -72,7 +72,8 @@ class XMLImage(FileMixin):
     def _build_offers_set(self, folder: str, target_set: set):
         """Защищенный метод, строит множество всех существующих офферов."""
         try:
-            for file_name in self._get_filenames_list(folder):
+            filenames_list = self._get_filenames_list(folder)
+            for file_name in filenames_list:
                 offer_image = file_name.split('.')[0]
                 if offer_image:
                     target_set.add(offer_image)
@@ -124,11 +125,17 @@ class XMLImage(FileMixin):
                 'Директория с изображениями отсутствует. Первый запуск'
             )
         try:
-            file_name_list = self._get_filenames_list(self.feeds_folder)
-            for file_name in file_name_list:
+            filenames_list = self._get_filenames_list(self.feeds_folder)
+            for file_name in filenames_list:
                 tree = self._get_tree(file_name, self.feeds_folder)
                 root = tree.getroot()
-                for offer in root.findall('.//offer'):
+                offers = root.findall('.//offer')
+
+                if not offers:
+                    logging.debug(f'В файле {file_name} не найдено offers')
+                    continue
+
+                for offer in offers:
                     offer_id = offer.get('id')
                     total_offers_processed += 1
 
@@ -199,10 +206,16 @@ class XMLImage(FileMixin):
                 if result_name in self._existing_framed_offers:
                     skipped_images += 1
                     continue
-
-                with Image.open(file_path / image_name) as image:
-                    image.load()
-                    image_width, image_height = image.size
+                try:
+                    with Image.open(file_path / image_name) as image:
+                        image.load()
+                        image_width, image_height = image.size
+                except Exception as e:
+                    total_failed_images += 1
+                    logging.error(
+                        f'Ошибка загрузки изображения {image_name}: {e}'
+                    )
+                    continue
 
                 with Image.open(frame_path / name_of_frame) as frame:
                     frame_resized = frame.resize(DEFAULT_IMAGE_SIZE)
@@ -246,8 +259,8 @@ class XMLImage(FileMixin):
                 f'неудачно - {total_failed_images}'
             )
         except Exception as e:
-            total_failed_images += 1
             logging.error(f'Неожиданная ошибка наложения рамки: {e}')
+            raise
 
     def add_all_frame(self):
         """

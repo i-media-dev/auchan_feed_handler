@@ -74,7 +74,13 @@ class XMLHandler(FileMixin):
         for file_name in file_names:
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
-            for offer in root.findall('.//offer'):
+            offers = root.findall('.//offer')
+
+            if not offers:
+                logging.debug(f'В файле {file_name} не найдено offers')
+                continue
+
+            for offer in offers:
                 offer_id = offer.get('id')
                 if offer_id:
                     offer_counts[offer_id] += 1
@@ -127,7 +133,13 @@ class XMLHandler(FileMixin):
         for file_name in self._get_filenames_list(self.feeds_folder):
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
-            for offer in root.findall('.//offer'):
+            offers = root.findall('.//offer')
+
+            if not offers:
+                logging.debug(f'В файле {file_name} не найдено offers')
+                continue
+
+            for offer in offers:
                 offer_name_text = offer.findtext('name')
                 offer_url_text = offer.findtext('url')
                 offer_id = offer.get('id')
@@ -174,7 +186,8 @@ class XMLHandler(FileMixin):
         """Метод, формирующий отчет по офферам."""
         result = []
         date_str = (dt.now()).strftime(DATE_FORMAT)
-        for file_name in self._get_filenames_list(self.feeds_folder):
+        filenames_list = self._get_filenames_list(self.feeds_folder)
+        for file_name in filenames_list:
             tree = self._get_tree(file_name, self.feeds_folder)
             root = tree.getroot()
             category_data = {}
