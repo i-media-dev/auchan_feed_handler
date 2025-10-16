@@ -332,7 +332,7 @@ class XMLHandler(FileMixin):
                         offer.remove(picture)
                     deleted_images += len(pictures)
 
-                    if oldprice_tag:
+                    if oldprice_tag is not None:
                         if offer_id in image_dict:
                             for img_file in image_dict[offer_id]:
                                 picture_tag = ET.SubElement(offer, 'picture')
