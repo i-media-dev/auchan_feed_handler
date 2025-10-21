@@ -233,12 +233,8 @@ class XMLImage(FileMixin):
                 ) // 2 + VERTICAL_OFFSET
 
                 if image_width > canvas_width or image_height > canvas_height:
-                    ratio = min(
-                        canvas_width / image_width,
-                        canvas_height / image_height
-                    )
-                    new_width = int(image_width * ratio)
-                    new_height = int(image_height * ratio)
+                    new_width = int(image_width * 50 / 100)
+                    new_height = int(image_height * 50 / 100)
                     image = image.resize((new_width, new_height))
                     x_position = (canvas_width - new_width) // 2
                     y_position = (
