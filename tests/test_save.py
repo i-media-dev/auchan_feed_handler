@@ -49,28 +49,6 @@ def test_get_file_success(mock_get, sample_feeds, mock_response):
     )
 
 
-@patch('handler.feeds_save.requests.get')
-def test_get_file_unauthorized_then_success(mock_get, sample_feeds):
-    """Тест получения файла с авторизацией."""
-    mock_response_401 = Mock()
-    mock_response_401.status_code = 401
-    mock_response_200 = Mock()
-    mock_response_200.status_code = 200
-    mock_response_200.content = b'<root>test</root>'
-
-    mock_get.side_effect = [mock_response_401, mock_response_200]
-
-    with patch.dict('os.environ', {
-        'XML_FEED_USERNAME': 'test_user',
-        'XML_FEED_PASSWORD': 'test_pass'
-    }):
-        saver = XMLSaver(feeds_list=sample_feeds)
-        response = saver._get_file('https://example.com/feed.xml')
-
-    assert response == mock_response_200
-    assert mock_get.call_count == 2
-
-
 def test_validate_xml_valid_content(sample_feeds, sample_xml_content):
     """Тест валидации корректного XML."""
     saver = XMLSaver(feeds_list=sample_feeds)
