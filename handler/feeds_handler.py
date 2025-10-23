@@ -77,7 +77,7 @@ class XMLHandler(FileMixin):
             offers = root.findall('.//offer')
 
             if not offers:
-                logging.debug(f'В файле {file_name} не найдено offers')
+                logging.debug('В файле %s не найдено offers', file_name)
                 continue
 
             for offer in offers:
@@ -136,7 +136,7 @@ class XMLHandler(FileMixin):
             offers = root.findall('.//offer')
 
             if not offers:
-                logging.debug(f'В файле {file_name} не найдено offers')
+                logging.debug('В файле %s не найдено offers', file_name)
                 continue
 
             for offer in offers:
@@ -281,7 +281,7 @@ class XMLHandler(FileMixin):
         filename = os.path.join(folder, f'{prefix}_{date_str}.json')
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        logging.info(f'✅ Данные сохранены в {filename}')
+        logging.info('✅ Данные сохранены в %s', filename)
         logging.debug('Файл сохранен.')
 
     def _get_image_dict(self):
@@ -294,14 +294,16 @@ class XMLHandler(FileMixin):
                 image_dict[offer_id].append(img_file)
             except (ValueError, IndexError):
                 logging.warning(
-                    'Не удалось присвоить изображение '
-                    f'{img_file} ключу {offer_id}'
+                    'Не удалось присвоить изображение %s ключу %s',
+                    img_file,
+                    offer_id
                 )
                 continue
-            except Exception as e:
+            except Exception as error:
                 logging.error(
                     'Неожиданная ошибка во время '
-                    f'сборки словаря image_dict: {e}'
+                    'сборки словаря image_dict: %s',
+                    error
                 )
                 raise
         return image_dict
@@ -353,14 +355,14 @@ class XMLHandler(FileMixin):
                                 input_images_promo += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logging.info(
-                '\nКоличество удаленных изображений в '
-                f'оффере - {deleted_images}\n'
-                'Количество добавленных изображений '
-                f'без промо - {input_images}\n'
-                'Количество добавленных изображений '
-                f'с промо - {input_images_promo}'
+                '\nКоличество удаленных изображений в оффере - %s'
+                '\nКоличество добавленных изображений без промо - %s'
+                '\nКоличество добавленных изображений с промо - %s',
+                deleted_images,
+                input_images,
+                input_images_promo
             )
 
-        except Exception as e:
-            logging.error(f'Ошибка в image_replacement: {e}')
+        except Exception as error:
+            logging.error('Ошибка в image_replacement: %s', error)
             raise

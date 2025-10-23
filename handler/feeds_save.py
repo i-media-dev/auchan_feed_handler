@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import xml.etree.ElementTree as ET
 
@@ -43,28 +42,17 @@ class XMLSaver(FileMixin):
             response = requests.get(feed, stream=True, timeout=(10, 60))
 
             if response.status_code == requests.codes.ok:
-                response.content
                 return response
-
-            if response.status_code == requests.codes.unauthorized:
-                username = os.getenv('XML_FEED_USERNAME')
-                password = os.getenv('XML_FEED_PASSWORD')
-                auth_response = requests.get(
-                    feed,
-                    auth=(username, password),
-                    stream=True,
-                    timeout=(10, 60)
+            else:
+                logging.error(
+                    'HTTP ошибка %s при загрузке %s',
+                    response.status_code,
+                    feed
                 )
+                return None
 
-                if auth_response.status_code == requests.codes.ok:
-                    auth_response.content
-                    return auth_response
-                else:
-                    logging.error(
-                        f'Ошибка авторизации: {auth_response.status_code}')
-                    return None
-        except requests.RequestException as e:
-            logging.error(f'Ошибка при загрузке {feed}: {e}')
+        except requests.RequestException as error:
+            logging.error('Ошибка при загрузке %s: %s', feed, error)
             return None
 
     def _get_filename(self, feed: str) -> str:
@@ -85,9 +73,11 @@ class XMLSaver(FileMixin):
                 match = re.search(r'encoding=[\'"]([^\'"]+)[\'"]', declaration)
                 if match:
                     encoding = match.group(1).lower()
-        except Exception as e:
+        except Exception as error:
             logging.warning(
-                f'Не удалось определить кодировку из декларации: {e}')
+                'Не удалось определить кодировку из декларации: %s',
+                error
+            )
         try:
             decoded_content = xml_content.decode(encoding)
         except UnicodeDecodeError:
@@ -98,8 +88,11 @@ class XMLSaver(FileMixin):
                 raise InvalidXMLError('Не удалось декодировать XML')
         try:
             ET.fromstring(decoded_content)
-        except ET.ParseError as e:
-            raise InvalidXMLError(f'XML содержит синтаксические ошибки: {e}')
+        except ET.ParseError as error:
+            raise InvalidXMLError(
+                'XML содержит синтаксические ошибки: %s',
+                error
+            )
         return decoded_content, encoding
 
     @time_of_function
@@ -113,7 +106,7 @@ class XMLSaver(FileMixin):
             file_path = folder_path / file_name
             response = self._get_file(feed)
             if response is None:
-                logging.warning(f'XML-файл {file_name} не получен.')
+                logging.warning('XML-файл %s не получен.', file_name)
                 continue
             try:
                 xml_content = response.content
@@ -124,12 +117,19 @@ class XMLSaver(FileMixin):
                 with open(file_path, 'wb') as file:
                     tree.write(file, encoding=encoding, xml_declaration=True)
                 saved_files += 1
-                logging.info(f'Файл {file_name} успешно сохранен')
-            except (EmptyXMLError, InvalidXMLError) as e:
-                logging.error(f'Ошибка валидации XML {file_name}: {e}')
+                logging.info('Файл %s успешно сохранен', file_name)
+            except (EmptyXMLError, InvalidXMLError) as error:
+                logging.error('Ошибка валидации XML %s: %s', file_name, error)
                 continue
-            except Exception as e:
-                logging.error(f'Ошибка обработки файла {file_name}: {e}')
+            except Exception as error:
+                logging.error(
+                    'Ошибка обработки файла %s: %s',
+                    file_name,
+                    error
+                )
                 continue
         logging.info(
-            f'Успешно записано {saved_files} файлов из {total_files}.')
+            'Успешно записано %s файлов из %s.',
+            saved_files,
+            total_files
+        )

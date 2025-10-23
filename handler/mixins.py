@@ -60,7 +60,7 @@ class FileMixin:
             logging.error(f'Не удалось создать директорию по причине {e}')
             raise DirectoryCreationError('Ошибка создания директории.')
 
-    def _get_tree(self, file_name: str, folder_name: Path) -> ET.ElementTree:
+    def _get_tree(self, file_name: str, folder_name: str) -> ET.ElementTree:
         """Защищенный метод, создает экземпляр класса ElementTree."""
         try:
             file_path = (
