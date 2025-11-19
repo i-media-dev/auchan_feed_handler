@@ -355,7 +355,7 @@ class XMLHandler(FileMixin):
                                 input_images_promo += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logging.info(
-                '\nКоличество удаленных изображений в оффере - %s'
+                '\nКоличество удаленных изображений - %s'
                 '\nКоличество добавленных изображений без промо - %s'
                 '\nКоличество добавленных изображений с промо - %s',
                 deleted_images,
