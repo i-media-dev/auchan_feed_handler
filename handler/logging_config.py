@@ -3,6 +3,19 @@ import os
 from datetime import datetime as dt
 from logging.handlers import RotatingFileHandler
 
+INFO_BOT = 25
+
+logging.addLevelName(INFO_BOT, 'INFO_BOT')
+
+
+class CustomLogger(logging.Logger):
+    def bot_event(self, message, *args, **kws):
+        if self.isEnabledFor(INFO_BOT):
+            self._log(INFO_BOT, message, args, **kws, stacklevel=2)
+
+
+logging.setLoggerClass(CustomLogger)
+
 
 def setup_logging():
     """
@@ -32,6 +45,8 @@ def setup_logging():
         backupCount=3,
         encoding='utf-8'
     )
+
+    handler.setLevel(logging.INFO)
 
     logging.basicConfig(
         level=logging.INFO,

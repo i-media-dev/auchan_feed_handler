@@ -15,6 +15,8 @@ from handler.mixins import FileMixin
 
 setup_logging()
 
+logger = logging.getLogger(__name__)
+
 
 class XMLSaver(FileMixin):
     """
@@ -128,7 +130,7 @@ class XMLSaver(FileMixin):
                     error
                 )
                 raise
-        logging.info(
+        logger.bot_event(
             'Успешно записано %s файлов из %s.',
             saved_files,
             total_files

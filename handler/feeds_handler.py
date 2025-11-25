@@ -19,6 +19,8 @@ from handler.mixins import FileMixin
 
 setup_logging()
 
+logger = logging.getLogger(__name__)
+
 
 class XMLHandler(FileMixin):
     """
@@ -354,12 +356,16 @@ class XMLHandler(FileMixin):
                                 )
                                 input_images_promo += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
-            logging.info(
-                '\nКоличество удаленных изображений - %s'
-                '\nКоличество добавленных изображений без промо - %s'
-                '\nКоличество добавленных изображений с промо - %s',
-                deleted_images,
-                input_images,
+            logger.bot_event(
+                'Количество удаленных изображений - %s',
+                deleted_images
+            )
+            logger.bot_event(
+                'Количество добавленных изображений без промо - %s',
+                input_images
+            )
+            logger.bot_event(
+                'Количество добавленных изображений с промо - %s',
                 input_images_promo
             )
 
