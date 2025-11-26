@@ -1,4 +1,5 @@
 import functools
+import json
 import logging
 import time
 from datetime import datetime as dt
@@ -17,47 +18,48 @@ setup_logging()
 
 
 def time_of_script(func):
-    """Декортаор для измерения времени работы всего приложения."""
+    """Универсальный декоратор для логирования выполнения."""
     @functools.wraps(func)
-    def wrapper():
+    def wrapper(*args, **kwargs):
+        start_ts = time.time()
         date_str = dt.now().strftime(DATE_FORMAT)
         time_str = dt.now().strftime(TIME_FORMAT)
-        run_id = str(int(time.time()))
         print(f'Функция main начала работу {date_str} в {time_str}')
-        start_time = time.time()
+
         try:
-            result = func()
-            execution_time = round(time.time() - start_time, 3)
-            print(
-                'Функция main завершила '
-                f'работу в {dt.now().strftime(TIME_FORMAT)}.'
-                f' Время выполнения - {execution_time} сек. '
-                f'или {round(execution_time / 60, 2)} мин.'
-            )
-            logging.info('SCRIPT_FINISHED_STATUS=SUCCESS')
-            logging.info(f'DATE={date_str}')
-            logging.info(f'EXECUTION_TIME={execution_time} сек')
-            logging.info(f'FUNCTION_NAME={func.__name__}')
-            logging.info(f'RUN_ID={run_id}')
-            logging.info('ENDLOGGING=1')
-            return result
+            result = func(*args, **kwargs)
+            status = 'SUCCESS'
+            error_type = error_message = None
         except Exception as e:
-            execution_time = round(time.time() - start_time, 3)
-            print(
-                'Функция main завершилась '
-                f'с ошибкой в {dt.now().strftime(TIME_FORMAT)}. '
-                f'Время выполнения - {execution_time} сек. '
-                f'Ошибка: {e}'
-            )
-            logging.info('SCRIPT_FINISHED_STATUS=ERROR')
-            logging.info(f'DATE={date_str}')
-            logging.info(f'EXECUTION_TIME={execution_time} сек')
-            logging.info(f'ERROR_TYPE={type(e).__name__}')
-            logging.info(f'ERROR_MESSAGE={str(e)}')
-            logging.info(f'FUNCTION_NAME={func.__name__}')
-            logging.info(f'RUN_ID={run_id}')
-            logging.info('ENDLOGGING=1')
+            status = 'ERROR'
+            error_type, error_message = type(e).__name__, str(e)
+            result = None
+
+        exec_time_min = round((time.time() - start_ts) / 60, 2)
+        exec_time_sec = round(time.time() - start_ts, 3)
+        print(
+            'Функция main завершила '
+            f'работу в {dt.now().strftime(TIME_FORMAT)}.'
+            f' Время выполнения - {exec_time_min} мин. '
+        )
+
+        log_record = {
+            "DATE": date_str,
+            "STATUS": status,
+            "FUNCTION_NAME": func.__name__,
+            "EXECUTION_TIME": exec_time_sec,
+            "ERROR_TYPE": error_type,
+            "ERROR_MESSAGE": error_message,
+            "ENDLOGGING": 1
+        }
+
+        logging.info(json.dumps(log_record, ensure_ascii=False))
+
+        if status == "ERROR":
             raise
+
+        return result
+
     return wrapper
 
 

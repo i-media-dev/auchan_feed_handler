@@ -26,17 +26,20 @@ def setup_logging():
     - UTF-8 кодировку логов.
     - Формат записей: время, имя файла, функция, уровень,
     сообщение, имя логгера.
+    - Кастомный уровень логирования INFO_BOT (помечать им сообщения,
+    которые хотим видеть в деталях сообщений по отработке скриптов)
     - Уровень логирования: INFO.
 
     Логи сохраняются в папку 'logs' с именем файла в формате ГГГГ-ММ-ДД.log.
     Автоматически создает папку логов, если она не существует.
     """
+    date_dir = dt.now().strftime('%Y-%m-%d')
     log_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..', 'logs')
+        os.path.join(os.path.dirname(__file__), '..', 'logs', date_dir)
     )
     os.makedirs(log_dir, exist_ok=True)
-
-    log_filename = dt.now().strftime('%Y-%m-%d.log')
+    log_id = dt.now().strftime('%Y%m%d%H%M')
+    log_filename = f'{log_id}.log'
     log_filepath = os.path.join(log_dir, log_filename)
 
     handler = RotatingFileHandler(
