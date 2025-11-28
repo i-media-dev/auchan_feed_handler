@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ATTEMPTION_LOAD_FEED = 3
+"""Попытки для скачивания фида."""
+
 PROTOCOL = 'https'
 """Протокол запроса."""
 
