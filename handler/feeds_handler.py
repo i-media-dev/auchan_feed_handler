@@ -372,3 +372,29 @@ class XMLHandler(FileMixin):
         except Exception as error:
             logging.error('Ошибка в image_replacement: %s', error)
             raise
+
+    def delete_offers(self, offers_ids: list[str]):
+
+        for filename in self._get_filenames_list(self.new_feeds_folder):
+            removed = 0
+            try:
+                tree = self._get_tree(filename, self.new_feeds_folder)
+                root = tree.getroot()
+                offers = list(root.findall('.//offer'))
+                parent = root.find('.//offers') or root
+                for offer in offers[:]:
+                    offer_id = str(offer.get('id'))
+                    if offer_id in offers_ids:
+                        parent.remove(offer)
+                        removed += 1
+                self._save_xml(root, self.new_feeds_folder, filename)
+                logging.info(
+                    'Удалено офферов с неподходящим id: %s (%s)',
+                    removed,
+                    filename
+                )
+            except Exception as error:
+                logging.error(
+                    'Неизвестная ошибка при удалении оффера: %s',
+                    error
+                )

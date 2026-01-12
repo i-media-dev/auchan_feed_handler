@@ -16,6 +16,7 @@ def main():
     image_client.get_images()
     image_client.add_all_frame()
     handler_client.image_replacement()
+    handler_client.delete_offers(['317165'])
 
 
 if __name__ == '__main__':
