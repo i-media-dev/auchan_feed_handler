@@ -18,6 +18,18 @@ class FileMixin:
     - _get_tree - Получает дерево XML-файла.
     """
 
+    def _save_xml(self, elem, file_folder, filename) -> None:
+        """Защищенный метод, сохраняет отформатированные файлы."""
+        root = elem
+        self._indent(root)
+        formatted_xml = ET.tostring(root, encoding='windows-1251')
+        file_path = self._make_dir(file_folder)
+        with open(
+            file_path / filename,
+            'wb'
+        ) as f:
+            f.write(formatted_xml)
+
     def _indent(self, elem, level=0) -> None:
         """Защищенный метод, расставляет правильные отступы в XML файлах."""
         i = '\n' + level * '  '
@@ -34,40 +46,88 @@ class FileMixin:
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i
 
-    def _get_filenames_list(self, folder_name: str) -> list[str]:
+    def _get_files_list(self, folder_name: str) -> list[str]:
         """Защищенный метод, возвращает список названий фидов."""
         folder_path = Path(__file__).parent.parent / folder_name
         if not folder_path.exists():
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
-        files_names = [
+        filenames = [
             file.name for file in folder_path.iterdir() if file.is_file()
         ]
-        if not files_names:
+        if not filenames:
             logging.error('В папке нет файлов')
             raise EmptyFeedsListError('Нет скачанных файлов')
-        logging.debug(f'Найдены файлы: {files_names}')
-        return files_names
+        logging.debug('Найдены файлы: %s', filenames)
+        return filenames
+
+    def _get_files_dict(self, folder_name: str) -> dict:
+        """
+        Защищенный метод, возвращает словарь
+        '{offer_id}: {filename}' названий файлов в переданной директории.
+        """
+        folder_path = Path(__file__).parent.parent / folder_name
+        if not folder_path.exists():
+            logging.error(f'Папка {folder_name} не существует')
+            raise DirectoryCreationError(f'Папка {folder_name} не найдена')
+        files_dict = {
+            file.name.split('.')[0]: file.name for file
+            in folder_path.iterdir() if file.is_file()
+        }
+        if not files_dict:
+            logging.error('В папке нет файлов')
+            raise EmptyFeedsListError('Нет скачанных файлов')
+        logging.debug(f'Найдены файлы: {files_dict}')
+        return files_dict
+
+    def _build_set(self, folder: str, target_set: set):
+        """Защищенный метод, строит множество всех существующих офферов."""
+        try:
+            filenames_list = self._get_files_list(folder)
+            for file_name in filenames_list:
+                offer_image = file_name.split('.')[0]
+                if offer_image:
+                    target_set.add(offer_image)
+
+            logging.info(
+                'Построен кэш для %s файлов',
+                len(target_set)
+            )
+        except EmptyFeedsListError:
+            raise
+        except DirectoryCreationError:
+            raise
+        except Exception as error:
+            logging.error(
+                'Неожиданная ошибка при сборе множества '
+                'скачанных изображений: %s',
+                error
+            )
+            raise
 
     def _make_dir(self, folder_name: str) -> Path:
         """Защищенный метод, создает директорию."""
         try:
             file_path = Path(__file__).parent.parent / folder_name
-            logging.debug(f'Путь к файлу: {file_path}')
+            logging.debug('Путь к файлу: %s', file_path)
             file_path.mkdir(parents=True, exist_ok=True)
             return file_path
-        except Exception as e:
-            logging.error(f'Не удалось создать директорию по причине {e}')
+        except Exception as error:
+            logging.error('Не удалось создать директорию по причине %s', error)
             raise DirectoryCreationError('Ошибка создания директории.')
 
-    def _get_tree(self, file_name: str, folder_name: str) -> ET.ElementTree:
-        """Защищенный метод, создает экземпляр класса ElementTree."""
+    def _get_root(self, file_name: str, folder_name: str) -> ET.Element:
+        """Защищенный метод, создает экземпляр класса Element."""
         try:
             file_path = (
                 Path(__file__).parent.parent / folder_name / file_name
             )
             logging.debug(f'Путь к файлу: {file_path}')
-            return ET.parse(file_path)
-        except Exception as e:
-            logging.error(f'Не удалось получить дерево фида по причине {e}')
+            tree = ET.parse(file_path)
+            return tree.getroot()
+        except Exception as error:
+            logging.error(
+                'Не удалось получить дерево фида по причине %s',
+                error
+            )
             raise GetTreeError('Ошибка получения дерева фида.')

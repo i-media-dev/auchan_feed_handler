@@ -4,17 +4,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+UNNECESSARY_IDS = ['317165',]
+"""Список айди офферов для удаления."""
+
 ATTEMPTION_LOAD_FEED = 3
 """Попытки для скачивания фида."""
 
-PROTOCOL = 'https'
-"""Протокол запроса."""
-
-ADDRESS = 'projects/auchan/new_images'
-"""Путь к файлу."""
-
-DOMEN_FTP = 'feeds.i-media.ru'
-"""Домен FTP-сервера."""
+ADDRESS_FTP_IMAGES = 'https://feeds.i-media.ru/projects/auchan/new_image'
+"""Адрес директории на ftp для изображений."""
 
 DEFAULT_IMAGE_SIZE = (1000, 1000)
 """

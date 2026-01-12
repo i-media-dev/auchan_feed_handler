@@ -21,7 +21,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-class XMLImage(FileMixin):
+class FeedImage(FileMixin):
     """
     Класс, предоставляющий интерфейс
     для работы с изображениями.
@@ -29,6 +29,8 @@ class XMLImage(FileMixin):
 
     def __init__(
         self,
+        filenames: list,
+        images: list,
         feeds_folder: str = FEEDS_FOLDER,
         frame_folder: str = FRAME_FOLDER,
         image_folder: str = IMAGE_FOLDER,
@@ -36,6 +38,8 @@ class XMLImage(FileMixin):
         feeds_list: tuple[str, ...] = FEEDS,
         number_pixels_image: int = NUMBER_PIXELS_IMAGE
     ) -> None:
+        self.filenames = filenames
+        self.images = images
         self.frame_folder = frame_folder
         self.feeds_folder = feeds_folder
         self.image_folder = image_folder
@@ -71,31 +75,6 @@ class XMLImage(FileMixin):
             return ''
         return f'{offer_id}.{image_format}'
 
-    def _build_offers_set(self, folder: str, target_set: set):
-        """Защищенный метод, строит множество всех существующих офферов."""
-        try:
-            filenames_list = self._get_filenames_list(folder)
-            for file_name in filenames_list:
-                offer_image = file_name.split('.')[0]
-                if offer_image:
-                    target_set.add(offer_image)
-
-            logging.info(
-                'Построен кэш для %s файлов',
-                len(target_set)
-            )
-        except EmptyFeedsListError:
-            raise
-        except DirectoryCreationError:
-            raise
-        except Exception as error:
-            logging.error(
-                'Неожиданная ошибка при сборе множества '
-                'скачанных изображений: %s',
-                error
-            )
-            raise
-
     def _save_image(
         self,
         image_data: bytes,
@@ -124,7 +103,7 @@ class XMLImage(FileMixin):
         offers_skipped_existing = 0
 
         try:
-            self._build_offers_set(
+            self._build_set(
                 self.image_folder,
                 self._existing_image_offers
             )
@@ -133,18 +112,16 @@ class XMLImage(FileMixin):
                 'Директория с изображениями отсутствует. Первый запуск'
             )
         try:
-            filenames_list = self._get_filenames_list(self.feeds_folder)
-            for file_name in filenames_list:
-                tree = self._get_tree(file_name, self.feeds_folder)
-                root = tree.getroot()
+            for filename in self.filenames:
+                root = self._get_root(filename, self.feeds_folder)
                 offers = root.findall('.//offer')
 
                 if not offers:
-                    logging.debug('В файле %s не найдено offers', file_name)
+                    logging.debug('В файле %s не найдено offers', filename)
                     continue
 
                 for offer in offers:
-                    offer_id = offer.get('id')
+                    offer_id = str(offer.get('id'))
                     total_offers_processed += 1
 
                     picture = offer.find('picture')
@@ -157,7 +134,7 @@ class XMLImage(FileMixin):
 
                     offers_with_images += 1
 
-                    if str(offer_id) in self._existing_image_offers:
+                    if offer_id in self._existing_image_offers:
                         offers_skipped_existing += 1
                         continue
 
@@ -178,7 +155,7 @@ class XMLImage(FileMixin):
                     images_downloaded += 1
             logger.bot_event(
                 'Всего обработано фидов - %s',
-                len(filenames_list)
+                len(self.filenames)
             )
             logger.bot_event(
                 'Всего обработано офферов - %s',
@@ -206,7 +183,6 @@ class XMLImage(FileMixin):
     def _add_frame(
         self,
         name_of_frame: str,
-        images_names_list: list,
         file_path: Path,
         frame_path: Path,
         new_file_path: Path
@@ -217,7 +193,7 @@ class XMLImage(FileMixin):
         skipped_images = 0
 
         try:
-            for image_name in images_names_list:
+            for image_name in self.images:
                 base_name = image_name.split('.')[0]
 
                 if 'promo' in name_of_frame:
@@ -297,9 +273,8 @@ class XMLImage(FileMixin):
             file_path = self._make_dir(self.image_folder)
             frame_path = self._make_dir(self.frame_folder)
             new_file_path = self._make_dir(self.new_image_folder)
-            images_names_list = self._get_filenames_list(self.image_folder)
             try:
-                self._build_offers_set(
+                self._build_set(
                     self.new_image_folder,
                     self._existing_framed_offers
                 )
@@ -312,7 +287,6 @@ class XMLImage(FileMixin):
             for frame_name in (NAME_OF_FRAME, NAME_OF_FRAME_PROMO):
                 self._add_frame(
                     frame_name,
-                    images_names_list,
                     file_path,
                     frame_path,
                     new_file_path

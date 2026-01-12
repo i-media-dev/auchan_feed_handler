@@ -9,7 +9,7 @@ from handler.logging_config import setup_logging
 setup_logging()
 
 
-class XMLDataBase:
+class ReportDataBase:
     """Класс, предоставляющий интерфейс для работы с базой данных"""
 
     def __init__(self, shop_name: str = NAME_OF_SHOP):

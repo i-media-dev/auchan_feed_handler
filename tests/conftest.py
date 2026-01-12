@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
-from handler.reports_db import XMLDataBase
+from handler.reports_db import ReportDataBase
 
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
@@ -56,7 +56,7 @@ def mock_db_connection():
 @pytest.fixture
 def xml_db_client():
     """Фикстура для создания экземпляра XMLDataBase с моками"""
-    client = XMLDataBase(shop_name='test_shop')
+    client = ReportDataBase(shop_name='test_shop')
     yield client
 
 
