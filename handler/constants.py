@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-UNNECESSARY_IDS = ['317165',]
+UNNECESSARY_IDS = ['317165', '118943']
 """Список айди офферов для удаления."""
 
 ATTEMPTION_LOAD_FEED = 3
